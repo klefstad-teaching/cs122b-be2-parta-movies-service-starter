@@ -1,11 +1,36 @@
-    name: GitHub Classroom Workflow
+name: GitHub Classroom Workflow
 
-    on: [push]
+on: [push]
 
-    jobs:
-      build:
-        name: Autograding
-        runs-on: ubuntu-latest
-        steps:
-          - uses: actions/checkout@v2
-          - uses: education/autograding@v1
+jobs:
+  build:
+    name: Autograding
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Checkout Tests
+        run: |
+          wget https://raw.githubusercontent.com/klefstad-teaching/CS122B-BE2-Movies-Service-Starter/main/pom.xml -O pom.xml;
+          wget https://raw.githubusercontent.com/klefstad-teaching/CS122B-BE2-Movies-Service-Starter/main/src/test/java/com/github/klefstad_teaching/cs122b/movies/MoviesServiceTest.java -O src/test/java/com/github/klefstad_teaching/cs122b/movies/MoviesServiceTest.java;
+          wget https://raw.githubusercontent.com/klefstad-teaching/CS122B-BE2-Movies-Service-Starter/main/src/test/resources/application.yml -O src/test/resources/application.yml;
+          wget https://raw.githubusercontent.com/klefstad-teaching/CS122B-BE2-Movies-Service-Starter/main/src/test/resources/expected-models.json -O src/test/resources/expected-models.json;
+          wget https://raw.githubusercontent.com/klefstad-teaching/CS122B-BE2-Movies-Service-Starter/main/src/test/resources/users.json -O src/test/resources/users.json;
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+      - name: Install MySQL
+        run: brew install mysql;
+      - name: Setup DB
+        run: |
+          mysql.server start;
+          mysql -uroot < db.sql;
+          mysql -uroot < db/0_genre.sql;
+          mysql -uroot < db/1_person.sql;
+          mysql -uroot < db/2_movie.sql;
+          mysql -uroot < db/3_movie_genre.sql;
+          mysql -uroot < db/4_movie_person.sql;
+      - name: Autograder
+        uses: education/autograding@v1
